@@ -1,2 +1,31 @@
-.env
+# --- Terraform ---
+*.tfstate
+*.tfstate.*
+.terraform/
+terraform.tfstate.backup
+.terraform.lock.hcl
+
+# --- Secrets & Credentials ---
+.secrets/
 *.pem
+*.env
+*.tfvars
+*.json
+
+# --- Logs ---
+*.log
+logs/
+*.gz
+
+# --- OS / Editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# --- Shell history or temp ---
+*.bak
+*.tmp
+*.retry
+*.old
