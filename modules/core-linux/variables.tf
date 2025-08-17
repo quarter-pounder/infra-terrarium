@@ -17,3 +17,9 @@ variable "key_name" {
   description = "Name of SSH key pair"
   type        = string
 }
+
+variable "user_data" {
+  description = "Cloud-init script content"
+  type        = string
+  default     = ""
+}

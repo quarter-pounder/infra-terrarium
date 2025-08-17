@@ -1,0 +1,68 @@
+#cloud-config
+
+hostname: ${hostname}
+fqdn: ${hostname}.infra-terrarium.local
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - wget
+  - gnupg
+  - ca-certificates
+  - chrony
+  - unzip
+  - net-tools
+
+runcmd:
+  # Enable NTP
+  - systemctl enable chrony
+  - systemctl start chrony
+
+  # Local instance tags
+  - echo "env=dev" >> /etc/environment
+  - echo "role=core-linux" >> /etc/environment
+
+  # Create Alloy directories
+  - mkdir -p /etc/alloy /var/log/alloy
+
+  # Download and install Alloy
+  - curl -Lo /usr/local/bin/alloy https://github.com/grafana/alloy/releases/latest/download/alloy-linux-amd64
+  - chmod +x /usr/local/bin/alloy
+
+  # Placeholder config file (override via Terraform or mount)
+  - echo "#!/usr/bin/env alloy" > /etc/alloy/config.alloy
+  - echo "# default empty config" >> /etc/alloy/config.alloy
+
+  # Add systemd service
+  - |
+    cat <<EOF > /etc/systemd/system/alloy.service
+    [Unit]
+    Description=Grafana Alloy
+    After=network.target
+
+    [Service]
+    ExecStart=/usr/local/bin/alloy --config.file=/etc/alloy/config.alloy
+    Restart=always
+
+    [Install]
+    WantedBy=multi-user.target
+    EOF
+
+  - systemctl daemon-reexec
+  - systemctl daemon-reload
+  - systemctl enable alloy
+  - systemctl start alloy
+
+  # Marker
+  - echo "cloud-init complete: $(date)" >> /var/log/cloud-init-done.log
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_authorized_key}
+
+final_message: "Terrarium cloud-init finished with Alloy installed."
