@@ -1,0 +1,41 @@
+// ===================
+// Alloy baseline config
+// ===================
+
+locals {
+  hostname = "${HOSTNAME}"
+}
+
+// ========== Host metrics ==========
+
+prometheus.exporter.node "host_metrics" {
+  enabled = true
+}
+
+prometheus.remote_write "local_metrics" {
+  endpoint {
+    url = "http://localhost:12345/how-do-you-like-that-fire" // placeholder for Prometheus
+  }
+}
+
+// ========== Log collection ==========
+
+filelog "syslogs" {
+  include = [
+    "/var/log/syslog",
+    "/var/log/auth.log"
+  ]
+
+  start_at = "beginning"
+
+  labels = {
+    job      = "syslog"
+    hostname = local.hostname
+  }
+}
+
+loki.process "to_stdout" {
+  forward_to = [loki.write.stdout.receiver]
+}
+
+loki.write.stdout "receiver" {}
