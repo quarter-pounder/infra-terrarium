@@ -30,9 +30,11 @@ runcmd:
   - curl -Lo /usr/local/bin/alloy https://github.com/grafana/alloy/releases/latest/download/alloy-linux-amd64
   - chmod +x /usr/local/bin/alloy
 
-  # Placeholder config file (override via Terraform or mount)
-  - echo "#!/usr/bin/env alloy" > /etc/alloy/config.alloy
-  - echo "# default empty config" >> /etc/alloy/config.alloy
+  # Write Alloy config file
+  - |
+    cat <<'ALLOYEOF' > /etc/alloy/config.alloy
+    ${alloy_config}
+    ALLOYEOF
 
   # Add systemd service
   - |
@@ -53,10 +55,6 @@ runcmd:
   - systemctl daemon-reload
   - systemctl enable alloy
   - systemctl start alloy
-
-  # Download and install Prometheus
-  - curl -Lo /usr/local/bin/prometheus https://github.com/prometheus/prometheus/releases/download/vX.Y.Z/prometheus-X.Y.Z.linux-amd64.tar.gz
-  - chmod +x /usr/local/bin/prometheus
 
   # Marker
   - echo "cloud-init complete: $(date)" >> /var/log/cloud-init-done.log

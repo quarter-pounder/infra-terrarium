@@ -20,9 +20,14 @@ data "aws_ami" "ubuntu" {
 }
 
 locals {
+  alloy_config = templatefile("${path.module}/../../configs/linux/config.alloy", {
+    hostname = var.name
+  })
+
   cloud_init_vars = {
     hostname           = var.name
     ssh_authorized_key = file(pathexpand(var.ssh_public_key_path))
+    alloy_config       = local.alloy_config
   }
 }
 
