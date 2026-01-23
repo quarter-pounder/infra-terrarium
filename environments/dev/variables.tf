@@ -15,3 +15,9 @@ variable "name" {
   type        = string
   default     = "dev-linux-01"
 }
+
+variable "ssh_public_key_path" {
+  description = "Path to SSH public key file"
+  type        = string
+  default     = "~/.ssh/terrarium-key.pub"
+}
