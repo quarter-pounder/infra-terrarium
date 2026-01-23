@@ -9,6 +9,7 @@ terraform.tfstate.backup
 .secrets/
 *.pem
 *.env
+!.env.example
 *.tfvars
 *.json
 
