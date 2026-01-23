@@ -23,3 +23,15 @@ variable "user_data" {
   type        = string
   default     = ""
 }
+
+variable "vpc_id" {
+  description = "VPC ID (optional, uses default VPC if null)"
+  type        = string
+  default     = null
+}
+
+variable "subnet_id" {
+  description = "Subnet ID (optional, uses default subnet if null)"
+  type        = string
+  default     = null
+}
