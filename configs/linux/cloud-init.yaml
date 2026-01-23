@@ -54,6 +54,10 @@ runcmd:
   - systemctl enable alloy
   - systemctl start alloy
 
+  # Download and install Prometheus
+  - curl -Lo /usr/local/bin/prometheus https://github.com/prometheus/prometheus/releases/download/vX.Y.Z/prometheus-X.Y.Z.linux-amd64.tar.gz
+  - chmod +x /usr/local/bin/prometheus
+
   # Marker
   - echo "cloud-init complete: $(date)" >> /var/log/cloud-init-done.log
 

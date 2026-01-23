@@ -4,19 +4,35 @@ provider "aws" {
   secret_key = var.aws_secret_key
 }
 
-data "template_file" "cloud_init" {
-  template = file("${path.module}/../../configs/linux/cloud-init.yaml")
-  vars = {
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+locals {
+  cloud_init_vars = {
     hostname           = var.name
-    ssh_authorized_key = file("~/.ssh/terrarium-key.pub")
+    ssh_authorized_key = file(pathexpand(var.ssh_public_key_path))
   }
 }
 
 module "vm1" {
   source         = "../../modules/core-linux"
   name           = var.name
-  ami_id         = "ami-0c3fd0f5d33134a76" # Ubuntu 22.04, Tokyo region
+  ami_id         = data.aws_ami.ubuntu.id
   instance_type  = "t3.micro"
   key_name       = var.key_name
-  user_data      = data.template_file.cloud_init.rendered
+  user_data      = templatefile("${path.module}/../../configs/linux/cloud-init.yaml", local.cloud_init_vars)
+  vpc_id         = null
+  subnet_id      = null
 }
