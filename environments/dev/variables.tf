@@ -21,3 +21,21 @@ variable "ssh_public_key_path" {
   type        = string
   default     = "~/.ssh/terrarium-key.pub"
 }
+
+variable "vpc_id" {
+  description = "VPC ID (optional, uses default VPC if null)"
+  type        = string
+  default     = null
+}
+
+variable "subnet_id" {
+  description = "Subnet ID (optional, uses default subnet if null)"
+  type        = string
+  default     = null
+}
+
+variable "availability_zone" {
+  description = "Availability zone (optional, uses default if null)"
+  type        = string
+  default     = null
+}

@@ -32,12 +32,13 @@ locals {
 }
 
 module "vm1" {
-  source         = "../../modules/core-linux"
-  name           = var.name
-  ami_id         = data.aws_ami.ubuntu.id
-  instance_type  = "t3.micro"
-  key_name       = var.key_name
-  user_data      = templatefile("${path.module}/../../configs/linux/cloud-init.yaml", local.cloud_init_vars)
-  vpc_id         = null
-  subnet_id      = null
+  source            = "../../modules/core-linux"
+  name              = var.name
+  ami_id            = data.aws_ami.ubuntu.id
+  instance_type     = "t3.micro"
+  key_name          = var.key_name
+  user_data         = templatefile("${path.module}/../../configs/linux/cloud-init.yaml", local.cloud_init_vars)
+  vpc_id            = var.vpc_id
+  subnet_id         = var.subnet_id
+  availability_zone = var.availability_zone
 }

@@ -35,3 +35,9 @@ variable "subnet_id" {
   type        = string
   default     = null
 }
+
+variable "availability_zone" {
+  description = "Availability zone (optional, uses default if null)"
+  type        = string
+  default     = null
+}
