@@ -3,21 +3,26 @@ data "aws_vpc" "default" {
   default = true
 }
 
+data "aws_vpc" "selected" {
+  id = var.vpc_id != null ? var.vpc_id : (length(data.aws_vpc.default) > 0 ? data.aws_vpc.default[0].id : null)
+}
+
 locals {
-  vpc_id = var.vpc_id != null ? var.vpc_id : (length(data.aws_vpc.default) > 0 ? data.aws_vpc.default[0].id : null)
+  vpc_id   = data.aws_vpc.selected.id
+  vpc_cidr = data.aws_vpc.selected.cidr_block
 }
 
 data "aws_subnets" "vpc_subnets" {
   count = var.subnet_id == null ? 1 : 0
   filter {
     name   = "vpc-id"
-    values = [local.vpc_id]
+    values = [data.aws_vpc.selected.id]
   }
 }
 
 data "aws_subnet" "default" {
   count  = var.subnet_id == null ? 1 : 0
-  vpc_id = local.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   filter {
     name   = "default-for-az"
     values = ["true"]
@@ -39,6 +44,14 @@ resource "aws_security_group" "vm" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "Alloy metrics endpoint"
+    from_port   = 12345
+    to_port     = 12345
+    protocol    = "tcp"
+    cidr_blocks = [local.vpc_cidr]
   }
 
   egress {

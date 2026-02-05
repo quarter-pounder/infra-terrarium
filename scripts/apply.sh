@@ -29,3 +29,9 @@ echo "Infrastructure deployed successfully!"
 echo ""
 echo "Instance details:"
 terraform output
+
+if terraform output -raw grafana_url >/dev/null 2>&1; then
+  echo ""
+  echo "To update Prometheus scrape targets, run:"
+  echo "  ./scripts/update-prometheus-targets.sh"
+fi
