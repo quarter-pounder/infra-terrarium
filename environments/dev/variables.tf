@@ -39,3 +39,15 @@ variable "availability_zone" {
   type        = string
   default     = null
 }
+
+variable "enable_observability_stack" {
+  description = "Enable observability stack (Prometheus, Loki, Grafana)"
+  type        = bool
+  default     = true
+}
+
+variable "observability_instance_type" {
+  description = "Instance type for observability stack"
+  type        = string
+  default     = "t3.small"
+}
