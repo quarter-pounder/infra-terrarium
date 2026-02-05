@@ -1,0 +1,72 @@
+#cloud-config
+
+hostname: ${hostname}
+fqdn: ${hostname}.infra-terrarium.local
+
+package_update: true
+package_upgrade: false
+packages:
+  - curl
+  - wget
+  - docker.io
+  - docker-compose
+  - net-tools
+
+runcmd:
+  # Enable Docker
+  - systemctl enable docker
+  - systemctl start docker
+  - usermod -aG docker ubuntu
+
+  # Create observability directories
+  - mkdir -p /opt/observability
+  - mkdir -p /opt/observability/grafana-provisioning/datasources
+
+  # Copy Docker Compose file
+  - |
+    cat <<'COMPOSEEOF' > /opt/observability/docker-compose.yaml
+    ${docker_compose_config}
+    COMPOSEEOF
+
+  # Copy Prometheus config
+  - |
+    cat <<'PROMEOEOF' > /opt/observability/prometheus.yaml
+    ${prometheus_config}
+    PROMEOEOF
+
+  # Copy Loki config
+  - |
+    cat <<'LOKIEOF' > /opt/observability/loki-config.yaml
+    ${loki_config}
+    LOKIEOF
+
+  # Copy Grafana datasources config
+  - |
+    cat <<'GRAFANAEOF' > /opt/observability/grafana-provisioning/datasources/datasources.yaml
+    ${grafana_datasources_config}
+    GRAFANAEOF
+
+  # Create Prometheus targets file (will be updated via script)
+  - |
+    cat <<'TARGETSEOF' > /opt/observability/prometheus-targets.json
+    []
+    TARGETSEOF
+
+  # Start observability stack
+  - cd /opt/observability && docker-compose up -d
+
+  # Wait for services to be ready
+  - sleep 10
+
+  # Marker
+  - echo "cloud-init complete: $(date)" >> /var/log/cloud-init-done.log
+
+users:
+  - name: ubuntu
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: users, admin, docker
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${ssh_authorized_key}
+
+final_message: "Terrarium observability stack cloud-init finished. Grafana: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4):3000"
