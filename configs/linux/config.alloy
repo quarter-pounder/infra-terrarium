@@ -12,11 +12,8 @@ prometheus.exporter.node "host_metrics" {
   enabled = true
 }
 
-prometheus.remote_write "local_metrics" {
-  endpoint {
-    url = "http://localhost:12345/how-do-you-like-that-fire" // placeholder for Prometheus
-  }
-}
+// Metrics are exposed on port 12345 for Prometheus to scrape
+// Prometheus will scrape this endpoint directly
 
 // ========== Log collection ==========
 
@@ -34,8 +31,12 @@ filelog "syslogs" {
   }
 }
 
-loki.process "to_stdout" {
-  forward_to = [loki.write.stdout.receiver]
+loki.process "process_logs" {
+  forward_to = [loki.write.loki.receiver]
 }
 
-loki.write.stdout "receiver" {}
+loki.write "loki" {
+  endpoint {
+    url = "${loki_url}/loki/api/v1/push"
+  }
+}
