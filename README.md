@@ -31,14 +31,16 @@ I need it because **logs and observability mean nothing on bare metal**. You can
 
 ```
 infra-terrarium/
-├── modules/              # Reusable Terraform modules (core-linux, fake-win, etc.)
+├── modules/              # Reusable Terraform modules
+│   ├── core-linux/
+│   └── observability/
 ├── environments/
 │   └── dev/              # Default sandbox setup
 ├── scripts/              # Apply / destroy helpers
 ├── configs/               # Versioned setup files (cloud-init, alloy, etc.)
 │   ├── linux/
-│   ├── windows/
-│   └── shared/
+│   ├── shared/           # Docker Compose, Prometheus, Loki, Grafana configs
+│   └── windows/
 ├── .env.example          # For cloud provider config
 ├── .gitignore
 └── README.md             # This file: intro + notes + to-do tracker
@@ -77,8 +79,9 @@ infra-terrarium/
 This will:
 - Initialize Terraform
 - Validate configuration
-- Deploy a Linux VM with Alloy, NTP, and basic observability
-- Display instance details and SSH command
+- Deploy observability stack (Prometheus, Loki, Grafana) and a Linux VM with Alloy, NTP
+- Display instance details, SSH commands, and Grafana/Prometheus URLs
+- Optionally run `./scripts/update-prometheus-targets.sh` after apply to register scrape targets
 
 **Connect to instance:**
 ```bash
@@ -95,13 +98,11 @@ terraform output ssh_command
 ```
 
 **Current deployment:**
-- Single Ubuntu 22.04 VM (`t3.micro`)
-- Default VPC/subnet (configurable via variables)
-- Security group with SSH access (port 22)
-- Alloy agent installed and configured
-- NTP (chrony) enabled for time sync
-- Host metrics collection (node exporter)
-- Syslog and auth.log collection
+- Observability stack VM: Prometheus (9090), Loki (3100), Grafana (3000). Disable with `enable_observability_stack = false`.
+- Single Ubuntu 22.04 VM (`t3.micro`) with Alloy, NTP (chrony), host metrics, syslog/auth.log to Loki.
+- Default VPC/subnet (configurable via variables).
+- Security groups: SSH (22), Alloy metrics (12345) within VPC.
+- After apply: `terraform output grafana_url`; run `./scripts/update-prometheus-targets.sh` to register VM for scraping.
 
 ---
 
@@ -133,7 +134,7 @@ If I ever need real Windows: I'll make a dedicated config for it, isolated from 
 - [ ] `modules/core-fake-windows/` with log emitter
 - [x] `scripts/apply.sh`, `destroy.sh`
 - [x] `configs/linux/config.alloy`, host metrics collection
-- [ ] `modules/observability/` with Grafana/Loki stack (standalone)
+- [x] `modules/observability/` with Grafana/Loki stack (standalone)
 - [ ] `environments/test/` with 2 Linux + 1 fake Win + optional stress
 - [ ] Optional chaos module (clock skew, log delay, network flap)
 - [x] VPC/subnet support with automatic defaults
