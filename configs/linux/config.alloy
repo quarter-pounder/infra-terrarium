@@ -12,9 +12,6 @@ prometheus.exporter.node "host_metrics" {
   enabled = true
 }
 
-// Metrics are exposed on port 12345 for Prometheus to scrape
-// Prometheus will scrape this endpoint directly
-
 // ========== Log collection ==========
 
 filelog "syslogs" {
@@ -22,11 +19,22 @@ filelog "syslogs" {
     "/var/log/syslog",
     "/var/log/auth.log"
   ]
-
-  start_at = "beginning"
+  start_at   = "beginning"
+  forward_to = [loki.process.process_logs.receiver]
 
   labels = {
     job      = "syslog"
+    hostname = local.hostname
+  }
+}
+
+filelog "emitter" {
+  include    = ["/var/log/terrarium-emitter.log"]
+  start_at   = "end"
+  forward_to = [loki.process.process_logs.receiver]
+
+  labels = {
+    job      = "emitter"
     hostname = local.hostname
   }
 }
