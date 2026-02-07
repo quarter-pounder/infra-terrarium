@@ -7,12 +7,12 @@ LEVELS=(info info warn error)
 PATHS=("/api/health" "/api/users" "/api/orders" "/internal/status")
 METHODS=("GET" "POST" "GET")
 
-level=${LEVELS[$((RANDOM % ${#LEVELS[@]}))]}
-path=${PATHS[$((RANDOM % ${#PATHS[@]}))]}
-method=${METHODS[$((RANDOM % ${#METHODS[@]}))]}
-status=$((RANDOM % 5 == 0 ? 500 : 200))
-req_id=$(printf "%08x" $RANDOM)
-ts=$(date -Iseconds)
+level=$${LEVELS[$$((RANDOM % $${#LEVELS[@]}))]}
+path=$${PATHS[$$((RANDOM % $${#PATHS[@]}))]}
+method=$${METHODS[$$((RANDOM % $${#METHODS[@]}))]}
+status=$$((RANDOM % 5 == 0 ? 500 : 200))
+req_id=$$(printf "%08x" $$RANDOM)
+ts=$$(date -Iseconds)
 
-echo "ts=$ts level=$level method=$method path=$path status=$status request_id=$req_id msg=\"request completed\"" >> "$LOG_FILE"
-echo "ts=$ts level=info component=emitter msg=\"heartbeat\" hostname=$(hostname -s)" >> "$LOG_FILE"
+echo "ts=$$ts level=$$level method=$$method path=$$path status=$$status request_id=$$req_id msg=\"request completed\"" >> "$$LOG_FILE"
+echo "ts=$$ts level=info component=emitter msg=\"heartbeat\" hostname=$$(hostname -s)" >> "$$LOG_FILE"
