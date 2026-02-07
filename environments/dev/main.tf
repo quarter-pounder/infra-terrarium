@@ -53,6 +53,7 @@ locals {
     hostname           = var.name
     ssh_authorized_key = file(pathexpand(var.ssh_public_key_path))
     alloy_config       = local.alloy_config
+    log_emitter_script = file("${path.module}/../../configs/linux/log-emitter.sh")
   }
 }
 
