@@ -56,6 +56,42 @@ runcmd:
   - systemctl enable alloy
   - systemctl start alloy
 
+  # Log emitter: script + systemd timer (every 30s)
+  - install -d -m 0755 /usr/local/bin
+  - |
+    cat <<'EMITTERSCRIPT' > /usr/local/bin/log-emitter.sh
+    ${log_emitter_script}
+    EMITTERSCRIPT
+  - chmod +x /usr/local/bin/log-emitter.sh
+  - touch /var/log/terrarium-emitter.log
+  - chmod 644 /var/log/terrarium-emitter.log
+  - |
+    cat <<'EOF' > /etc/systemd/system/log-emitter.service
+    [Unit]
+    Description=Terrarium log emitter
+    After=network.target
+
+    [Service]
+    Type=oneshot
+    ExecStart=/usr/local/bin/log-emitter.sh
+    EOF
+  - |
+    cat <<'EOF' > /etc/systemd/system/log-emitter.timer
+    [Unit]
+    Description=Run log emitter every 30s
+
+    [Timer]
+    OnBootSec=60
+    OnUnitActiveSec=30
+    Persistent=true
+
+    [Install]
+    WantedBy=timers.target
+    EOF
+  - systemctl daemon-reload
+  - systemctl enable log-emitter.timer
+  - systemctl start log-emitter.timer
+
   # Marker
   - echo "cloud-init complete: $(date)" >> /var/log/cloud-init-done.log
 
